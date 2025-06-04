@@ -1,44 +1,50 @@
+/*!
+ * @file readData.ino
+ * @brief Download this demo to test simple read from bmp280, connect sensor through IIC interface.
+ * @n  Data will print on your serial monitor
+ *
+ * @copyright   Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
+ * @license     The MIT License (MIT)
+ * @author [Frank](jiehan.guo@dfrobot.com)
+ * @version  V1.0
+ * @date  2019-03-12
+ * @url https://github.com/DFRobot/DFRobot_BMP280
+ */
+
 #include "BMP280.h"
 #include "Wire.h"
-#define P0 1013.25
-BMP280 bmp;
-void setup()
-{
-  Serial.begin(9600);
-  if(!bmp.begin()){
-    Serial.println("BMP init failed!");
-    while(1);
+
+typedef DFRobot_BMP280_IIC    BMP;    // ******** use abbreviations instead of full names ********
+
+BMP   bmp(&Wire, BMP::eSdoLow);
+
+#define SEA_LEVEL_PRESSURE    1015.0f   // sea level pressure
+
+void setup(){
+  Serial.begin(115200);
+  bmp.reset();
+  Serial.println("bmp read data test");
+  while(bmp.begin() != BMP::eStatusOK) {
+    Serial.println("bmp begin faild");
+    delay(2000);
   }
-  else Serial.println("BMP init success!");
-  
-  bmp.setOversampling(4);
-  
+  Serial.println("bmp begin success");
+  delay(1000);
 }
-void loop()
-{
-  double Temp,Pres;
-  char result = bmp.startMeasurment();
- 
-  if(result!=0){
-    delay(result);
-    result = bmp.getTemperatureAndPressure(Temp,Pres);
-    
-      if(result!=0)
-      {
-        double Alt = bmp.altitude(Pres,P0);
-        
-        Serial.print("T = \t");Serial.print(Temp,2); Serial.print(" degC\t");
-        Serial.print("P = \t");Serial.print(Pres,2); Serial.print(" mBar\t");
-        Serial.print("A = \t");Serial.print(Alt,2); Serial.println(" m");
-       
-      }
-      else {
-        Serial.println("Error.");
-      }
-  }
-  else {
-    Serial.println("Error.");
-  }
-  
-  delay(400);
+
+
+
+void loop(){
+  float   temp = bmp.getTemperature();
+  uint32_t    press = bmp.getPressure();
+  float   alti = bmp.calAltitude(SEA_LEVEL_PRESSURE, press);
+
+  Serial.println();
+  Serial.println("================");
+  Serial.print("temperature (C): "); Serial.println(temp);
+  Serial.print("pressure (Pa):         "); Serial.println(press);
+  Serial.print("altitude (AGL meter):      "); Serial.println(alti);
+  Serial.println("================");
+
+  delay(100);
 }
