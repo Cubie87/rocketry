@@ -1,12 +1,4 @@
 {
-	"folders": [
-		{
-			"path": "C:/Users/cubie/Documents/rocketry"
-		},
-		{
-			"name": "esp32",
-			"path": "C:/Users/cubie/Documents/rocketry/esp32"
-		}
-	],
+	"folders": [],
 	"settings": {}
 }
