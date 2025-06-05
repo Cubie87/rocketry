@@ -154,7 +154,7 @@ public:
     static uint8_t constexpr REGISTER_VALUE_AK8963_READ     = 0x80;
 
     /* Others */
-    static uint8_t constexpr WHO_AM_I_CODE                  = 0x71;
+    static uint8_t constexpr WHO_AM_I_CODE                  = 0x70;
     static uint8_t constexpr MAGNETOMETER_I2C_ADDRESS       = 0x0C;
     static uint8_t constexpr MAGNETOMETER_WHO_AM_I_CODE     = 0x48;
 

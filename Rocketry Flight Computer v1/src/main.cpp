@@ -3,8 +3,6 @@
 #include "BMP280.h" // Barometer and Temperature Sensor
 #include "MPU9250_WE.h" // Inertial Measurement Unit
 
-
-
 // Definitions for BMP280 Barometer and Temperature Sensor
 typedef DFRobot_BMP280_IIC BMP;
 BMP bmp(&Wire, BMP::eSdoLow);
@@ -12,7 +10,6 @@ BMP bmp(&Wire, BMP::eSdoLow);
 
 // Definitions for MPU9250 Inertial Measurement Unit
 MPU9250_WE mpu = MPU9250_WE(0x68); // I2c Address of MPU
-
 
 
 void setup(){
@@ -34,7 +31,7 @@ void setup(){
     // }
 
     // Setup for MPU9250
-    while(mpu.init() != 0){ // successful init returns 0
+    while(mpu.init() == false){ // failed init returns false
         Serial.println("MPU init failed");
         delay(2000);
     }
@@ -47,6 +44,7 @@ void setup(){
     mpu.setGyrRange(MPU9250_GYRO_RANGE_2000); // Gyro Settings
     mpu.enableGyrDLPF();
     mpu.setGyrDLPF(MPU9250_DLPF_6);
+
     delay(5000);
 }
 
