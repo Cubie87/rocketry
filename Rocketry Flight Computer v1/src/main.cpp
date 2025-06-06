@@ -17,6 +17,7 @@ void setup(){
 
     Wire.begin(); // Start I2C Bus
 
+
     // Setup for BMP280
     bmp.reset();
     while(bmp.begin() != BMP::eStatusOK) {
@@ -25,6 +26,7 @@ void setup(){
     }
     Serial.println("BMP init success");
 
+    
     // Setup for MPU9250
     while(mpu.init() == false){ // failed init returns false
         Serial.println("MPU init failed");
