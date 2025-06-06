@@ -177,7 +177,7 @@ public:
    * @param pressure Pressure in pa
    * @return Altitude in meter
    */
-  float calAltitude(uint32_t pressure);
+  float calAltitude(float pressure);
 
   /**
    * @fn reset
