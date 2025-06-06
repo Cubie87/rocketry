@@ -3,6 +3,8 @@
 #include "BMP280.h" // Barometer and Temperature Sensor
 #include "MPU9250_WE.h" // Inertial Measurement Unit
 
+#include "baro-rolling-ave.h"
+
 // Definitions for BMP280 Barometer and Temperature Sensor
 typedef DFRobot_BMP280_IIC BMP;
 BMP bmp(&Wire, BMP::eSdoLow);
@@ -62,7 +64,10 @@ void loop(){
     float mputemp = mpu.getTemperature();
     float resultantG = mpu.getResultantG(gValue);
 
-
+    /*
+    Do Maths
+    */
+    float rollingAltAverage = baroSmooth(alti);
 
     /*
     Print out over serial to computer
@@ -72,6 +77,7 @@ void loop(){
     Serial.print("Baro Temp (C):   "); Serial.println(bmptemp);
     Serial.print("Pres (Pa):       "); Serial.println(press);
     Serial.print("Alt (AGL meter): "); Serial.println(alti);
+    Serial.print("Alt (rolling):   "); Serial.println(rollingAltAverage);
 
     Serial.print("Accel (g) x, y, z: "); Serial.print(gValue.x); Serial.print("  "); Serial.print(gValue.y); Serial.print("  "); Serial.print(gValue.z);
     Serial.println();
@@ -84,5 +90,5 @@ void loop(){
 
     
 
-    delay(5000);
+    delay(100);
 }
