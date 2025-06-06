@@ -6,7 +6,7 @@
 // Definitions for BMP280 Barometer and Temperature Sensor
 typedef DFRobot_BMP280_IIC BMP;
 BMP bmp(&Wire, BMP::eSdoLow);
-#define SEA_LEVEL_PRESSURE 1015.0f   // sea level pressure
+//float g_GROUND_ALT;
 
 // Definitions for MPU9250 Inertial Measurement Unit
 MPU9250_WE mpu = MPU9250_WE(0x68); // I2c Address of MPU
@@ -24,11 +24,6 @@ void setup(){
         delay(2000);
     }
     Serial.println("BMP init success");
-
-    // while (true){
-    //     Serial.println(mpu.init());
-    //     delay(200000);
-    // }
 
     // Setup for MPU9250
     while(mpu.init() == false){ // failed init returns false
@@ -55,9 +50,9 @@ void loop(){
     Read sensor data
     */
     // Barometer
-    float   bmptemp = bmp.getTemperature();
-    uint32_t    press = bmp.getPressure();
-    float   alti = bmp.calAltitude(SEA_LEVEL_PRESSURE, press);
+    float bmptemp = bmp.getTemperature();
+    float press = bmp.getPressure();
+    float alti = bmp.calAltitude(press); // calculate altitude AGL
     // IMU
     xyzFloat gValue = mpu.getGValues();
     xyzFloat gyr = mpu.getGyrValues();
