@@ -105,7 +105,7 @@ void loop(){
             /* code */
             break;
         default:
-            /* code */
+            // something fucked up somewhere
             break;
     }
 
@@ -136,5 +136,5 @@ void loop(){
     Serial.println("================");
 
 
-    delay(100);
+    delay(200);
 }
