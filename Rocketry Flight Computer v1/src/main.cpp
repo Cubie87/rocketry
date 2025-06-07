@@ -39,10 +39,10 @@ void setup(){
     mpu.setSampleRateDivider(5);
     mpu.setAccRange(MPU9250_ACC_RANGE_16G); // Accel Settings
     mpu.enableAccDLPF(true);
-    mpu.setAccDLPF(MPU9250_DLPF_6); // Level 6 limit is 5Hz with 67ms delay. Level 0 is 460Hz with 2ms delay.
+    mpu.setAccDLPF(MPU9250_DLPF_1); // Level 6 limit is 5Hz with 67ms delay. Level 0 is 460Hz with 2ms delay.
     mpu.setGyrRange(MPU9250_GYRO_RANGE_2000); // Gyro Settings
     mpu.enableGyrDLPF();
-    mpu.setGyrDLPF(MPU9250_DLPF_6); // Level 6 limit is 5Hz with 33ms delay. Level 0 is 250Hz with 1ms delay.
+    mpu.setGyrDLPF(MPU9250_DLPF_1); // Level 6 limit is 5Hz with 33ms delay. Level 0 is 250Hz with 1ms delay.
 
     delay(5000);
 }
