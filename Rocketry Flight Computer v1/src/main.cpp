@@ -8,13 +8,19 @@
 // Definitions for BMP280 Barometer and Temperature Sensor
 typedef DFRobot_BMP280_IIC BMP;
 BMP bmp(&Wire, BMP::eSdoLow);
-//float g_GROUND_ALT;
 
 // Definitions for MPU9250 Inertial Measurement Unit
 MPU9250_WE mpu = MPU9250_WE(0x68); // I2c Address of MPU
 
+// System State Variables
+int systemState = 0;
+float groundAlt = 0.0;
+float maxAltThusFar = 0.0;
 
 void setup(){
+    // Move Data from SPI Flash to microSD Card. Halt if erroring.
+
+
     Serial.begin(115200); // Start Serial monitoring over USB to host computer
 
     Wire.begin(); // Start I2C Bus
@@ -64,10 +70,51 @@ void loop(){
     float mputemp = mpu.getTemperature();
     float resultantG = mpu.getResultantG(gValue);
 
+
+
     /*
     Do Maths
     */
     float rollingAltAverage = baroSmooth(alti);
+    if(rollingAltAverage > maxAltThusFar){
+        maxAltThusFar = rollingAltAverage;
+    }
+
+
+    /*
+    Finite State Machine
+    */
+    switch (systemState){
+        case 0: // Pre Launch
+            if(rollingAltAverage > groundAlt + 20.0f){
+                // if we are above 20m AGL, we have launched.
+                systemState = 2;
+            }
+            break;
+        case 2: // Post Launch
+            if(rollingAltAverage < maxAltThusFar - 20.0f){
+                // if we are 20m below our max recorded alt, we have reached apogee.
+                systemState = 6;
+                // yeetChutes(){}
+            }
+            break;
+        case 6: // Post Apogee
+            /* code */
+            break;
+        case 9: // Landed
+            /* code */
+            break;
+        default:
+            /* code */
+            break;
+    }
+
+
+
+    /*
+    Save Data to SPI Flash
+    */
+
 
     /*
     Print out over serial to computer
@@ -88,7 +135,6 @@ void loop(){
 
     Serial.println("================");
 
-    
 
     delay(100);
 }
