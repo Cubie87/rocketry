@@ -25,6 +25,8 @@
  */
 MPU9250_WE myMPU9250 = MPU9250_WE(MPU9250_ADDR);
 
+unsigned long prevTime = 0; 
+
 void setup() {
   Serial.begin(115200);
   Wire.begin();
@@ -166,33 +168,37 @@ void loop() {
   float temp = myMPU9250.getTemperature();
   float resultantG = myMPU9250.getResultantG(gValue);
 
-  Serial.println("Acceleration in g (x,y,z):");
+  Serial.println("g (x,y,z):");
   Serial.print(gValue.x);
-  Serial.print("   ");
+  Serial.print(" ");
   Serial.print(gValue.y);
-  Serial.print("   ");
+  Serial.print(" ");
   Serial.println(gValue.z);
-  Serial.print("Resultant g: ");
+  Serial.print("g: ");
   Serial.println(resultantG);
 
-  Serial.println("Gyroscope data in degrees/s: ");
-  Serial.print(gyr.x);
-  Serial.print("   ");
-  Serial.print(gyr.y);
-  Serial.print("   ");
-  Serial.println(gyr.z);
+  // Serial.println("Gyroscope data in degrees/s: ");
+  // Serial.print(gyr.x);
+  // Serial.print("   ");
+  // Serial.print(gyr.y);
+  // Serial.print("   ");
+  // Serial.println(gyr.z);
 
-  Serial.println("Magnetometer Data in µTesla: ");
-  Serial.print(magValue.x);
-  Serial.print("   ");
-  Serial.print(magValue.y);
-  Serial.print("   ");
-  Serial.println(magValue.z);
+  // Serial.println("Magnetometer Data in µTesla: ");
+  // Serial.print(magValue.x);
+  // Serial.print("   ");
+  // Serial.print(magValue.y);
+  // Serial.print("   ");
+  // Serial.println(magValue.z);
 
-  Serial.print("Temperature in °C: ");
-  Serial.println(temp);
+  // Serial.print("Temperature in °C: ");
+  // Serial.println(temp);
 
-  Serial.println("********************************************");
+  float dT = millis() - prevTime;
+  prevTime = millis();
 
-  delay(100);
+
+  Serial.println(dT);
+
+  Serial.println("****");
 }
