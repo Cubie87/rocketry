@@ -6,7 +6,7 @@ Utilises an ESP32 OR Raspberry Pi Pico as microprocessor
 (Currently ESP32)
 
 Sensors:
-- MPU9250/MPU9265
+- MPU9250/MPU6500
   - 3dof Accel
   - 3dof Gyro
   - Temperature
