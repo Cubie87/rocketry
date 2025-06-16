@@ -32,6 +32,9 @@ Note this is mostly for me for new OS installs, feel free to ignore.
 5. Install C/C++ Extension Pack Extension
 
 Test flash a microcontroller
-- ESP32: Press both EN and BOOT, Release EN, then BOOT.
+- ESP32:
+  - Press both EN and BOOT, Release EN, then BOOT.
   - EN --> RESET
-- Pi Pico: Unplug. Hold BOOTSEL down and plug in. Release BOOTSEL after a few seconds.
+- Pi Pico:
+  - Install drivers using `zadig.exe`
+  - Unplug. Hold BOOTSEL down and plug in. Release BOOTSEL after a few seconds.
