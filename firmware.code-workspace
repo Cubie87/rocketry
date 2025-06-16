@@ -7,6 +7,14 @@
 		{
 			"name": "Rocketry Flight Computer v1",
 			"path": "Rocketry Flight Computer v1"
+		},
+		{
+			"name": "mpu9250-test",
+			"path": "test-modules/mpu9250-test"
+		},
+		{
+			"name": "bmp280-test",
+			"path": "test-modules/bmp280-test"
 		}
 	],
 	"settings": {}
