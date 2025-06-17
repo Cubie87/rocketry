@@ -13,9 +13,12 @@ BMP bmp(&Wire, BMP::eSdoLow);
 MPU9250_WE mpu = MPU9250_WE(0x68); // I2c Address of MPU
 
 // System State Variables
-int systemState = 0;
-float groundAlt = 0.0;
-float maxAltThusFar = 0.0;
+int systemState = 0; // Finite State Machine
+float baroGroundAlt = 0.0; // Barometric Ground Altitude
+float maxAltThusFar = 0.0; // Rolling Max Alt
+
+
+
 
 void setup(){
     // Move Data from SPI Flash to microSD Card. Halt if erroring.
@@ -24,7 +27,7 @@ void setup(){
     Serial.begin(115200); // Start Serial monitoring over USB to host computer
 
     Wire.begin(); // Start I2C Bus
-
+    Wire.setClock(400000); // Set I2C to Fast (400kHz)
 
     // Setup for BMP280
     bmp.reset();
@@ -33,7 +36,8 @@ void setup(){
         delay(2000);
     }
     Serial.println("BMP init success");
-
+    baroGroundAlt = bmp.calAltitude(bmp.getPressure()); // Set "Ground" Barometric Altitude
+    maxAltThusFar = baroGroundAlt; // Ensure that negative barometric altitudes cannot cause errors.
     
     // Setup for MPU9250
     while(mpu.init() == false){ // failed init returns false
@@ -55,27 +59,31 @@ void setup(){
 
 
 
+
+
+
 void loop(){
     /*
     Read sensor data
     */
     // Barometer
     float bmptemp = bmp.getTemperature();
-    float press = bmp.getPressure();
-    float alti = bmp.calAltitude(press); // calculate altitude AGL
+    float baroPressure = bmp.getPressure();
+    float aglAltitude = bmp.calAltitude(baroPressure) - baroGroundAlt; // calculate altitude AGL
     // IMU
-    xyzFloat gValue = mpu.getGValues();
+    xyzFloat imuAccelG = mpu.getGValues();
     xyzFloat gyr = mpu.getGyrValues();
     xyzFloat magValue = mpu.getMagValues();
     float mputemp = mpu.getTemperature();
-    float resultantG = mpu.getResultantG(gValue);
+    float resultantG = mpu.getResultantG(imuAccelG);
 
 
 
     /*
     Do Maths
     */
-    float rollingAltAverage = baroSmooth(alti);
+    // Rolling average for barometric altitude
+    float rollingAltAverage = baroSmooth(aglAltitude);
     if(rollingAltAverage > maxAltThusFar){
         maxAltThusFar = rollingAltAverage;
     }
@@ -86,7 +94,7 @@ void loop(){
     */
     switch (systemState){
         case 0: // Pre Launch
-            if(rollingAltAverage > groundAlt + 20.0f){
+            if(rollingAltAverage > baroGroundAlt + 20.0f){
                 // if we are above 20m AGL, we have launched.
                 systemState = 2;
             }
@@ -95,7 +103,7 @@ void loop(){
             if(rollingAltAverage < maxAltThusFar - 20.0f){
                 // if we are 20m below our max recorded alt, we have reached apogee.
                 systemState = 6;
-                // yeetChutes(){}
+                // yeetChutes();
             }
             break;
         case 6: // Post Apogee
@@ -106,6 +114,7 @@ void loop(){
             break;
         default:
             // something fucked up somewhere
+            // log error message, send downlink
             break;
     }
 
@@ -122,11 +131,11 @@ void loop(){
     Serial.println();
     Serial.println("================");
     Serial.print("Baro Temp (C):   "); Serial.println(bmptemp);
-    Serial.print("Pres (Pa):       "); Serial.println(press);
-    Serial.print("Alt (AGL meter): "); Serial.println(alti);
+    Serial.print("Pres (Pa):       "); Serial.println(baroPressure);
+    Serial.print("Alt (AGL meter): "); Serial.println(aglAltitude);
     Serial.print("Alt (rolling):   "); Serial.println(rollingAltAverage);
 
-    Serial.print("Accel (g) x, y, z: "); Serial.print(gValue.x); Serial.print("  "); Serial.print(gValue.y); Serial.print("  "); Serial.print(gValue.z);
+    Serial.print("Accel (g) x, y, z: "); Serial.print(imuAccelG.x); Serial.print("  "); Serial.print(imuAccelG.y); Serial.print("  "); Serial.print(imuAccelG.z);
     Serial.println();
     Serial.print("Resultant g:       "); Serial.println(resultantG);
     Serial.print("Gyro (deg/s) x, y, z: "); Serial.print(gyr.x); Serial.print("  "); Serial.print(gyr.y); Serial.print("  "); Serial.print(gyr.z);
