@@ -30,6 +30,7 @@ unsigned long prevTime = 0;
 void setup() {
   Serial.begin(115200);
   Wire.begin();
+  Wire.setClock(400000);
   if(!myMPU9250.init()){
     Serial.println("MPU9250 does not respond");
   }
@@ -194,8 +195,8 @@ void loop() {
   // Serial.print("Temperature in °C: ");
   // Serial.println(temp);
 
-  float dT = millis() - prevTime;
-  prevTime = millis();
+  float dT = micros() - prevTime;
+  prevTime = micros();
 
 
   Serial.println(dT);

@@ -20,8 +20,14 @@ BMP   bmp(&Wire, BMP::eSdoLow);
 
 #define SEA_LEVEL_PRESSURE    1015.0f   // sea level pressure
 
+unsigned long prevTime = 0; 
+
 void setup(){
   Serial.begin(115200);
+
+  Wire.begin(); // Start I2C Bus
+  Wire.setClock(400000);
+
   bmp.reset();
   Serial.println("bmp read data test");
   while(bmp.begin() != BMP::eStatusOK) {
@@ -39,12 +45,14 @@ void loop(){
   uint32_t    press = bmp.getPressure();
   float   alti = bmp.calAltitude(SEA_LEVEL_PRESSURE, press);
 
-  Serial.println();
-  Serial.println("================");
-  Serial.print("temperature (C): "); Serial.println(temp);
-  Serial.print("pressure (Pa):         "); Serial.println(press);
-  Serial.print("altitude (AGL meter):      "); Serial.println(alti);
-  Serial.println("================");
+  Serial.print("Temp    (C): "); Serial.println(temp);
+  Serial.print("Pres   (Pa): "); Serial.println(press);
+  Serial.print("Alt (AGL m): "); Serial.println(alti);
 
-  delay(100);
+  float dT = micros() - prevTime;
+  prevTime = micros();
+
+
+  Serial.println(dT);
+  Serial.println("================");
 }
