@@ -197,8 +197,6 @@ void loop() {
 
   float dT = micros() - prevTime;
   prevTime = micros();
-
-
   Serial.println(dT);
 
   Serial.println("****");
