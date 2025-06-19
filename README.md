@@ -13,6 +13,10 @@ Sensors:
 - BMP280
   - Baro Pressure
   - Temperature
+- SD Card
+  - 16/32GB microSD card, FAT32 formatted.
+- W25Q128
+  - SPI Flash Chip
 
 More to come (GPS, Datalogging to Flash/microSD, etc.)
 
