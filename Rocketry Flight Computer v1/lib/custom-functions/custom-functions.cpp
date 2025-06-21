@@ -1,3 +1,5 @@
+#include "custom-functions.h"
+
 //Parameters
 const int numReadings = 24;
 float readings [numReadings];

@@ -4,8 +4,11 @@
 #include "MPU9250_WE.h" // Inertial Measurement Unit
 #include "SD.h" // microSD Card
 #include "SPI.h" // SPI Bus for SPI Flash and microSD
+#include "SerialFlash.h"
 
-#include "baro-rolling-ave.h"
+#include "custom-functions.h"
+
+
 
 // Definitions for BMP280 Barometer and Temperature Sensor
 typedef DFRobot_BMP280_IIC BMP;
