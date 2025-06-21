@@ -19,8 +19,11 @@ MPU9250_WE mpu = MPU9250_WE(0x68); // I2C Address of MPU
 
 // Definitions for SD Card
 const int sdChipSelect = 22; // SPI CS Pin for SD Card
-File logFile; // Fat32 file variable
-char logFileName[32] = {0};
+File sdLogFile; // Fat32 file variable
+String sdLogFileName;
+
+// Definitions for SPI Flash
+const int flashChipSelect = 17; // digital pin for flash chip CS pin
 
 // System State Variables
 int systemState = 0; // Finite State Machine
@@ -31,11 +34,9 @@ float maxAltThusFar = 0.0; // Rolling Max Alt
 
 
 void setup(){
-    // Move Data from SPI Flash to microSD Card. Halt if erroring.
-
-
     Serial.begin(115200); // Start Serial monitoring over USB to host computer
 
+    delay(500);
     Wire.begin(); // Start I2C Bus
     Wire.setClock(400000); // Set I2C to Fast (400kHz)
 
@@ -51,7 +52,7 @@ void setup(){
     baroGroundAlt = bmp.calAltitude(bmp.getPressure()); // Set "Ground" Barometric Altitude
     maxAltThusFar = baroGroundAlt; // Ensure that negative barometric altitudes cannot cause errors.
     
-    
+
 
     // Setup for MPU9250
     while(mpu.init() == false){ // failed init returns false
@@ -69,32 +70,71 @@ void setup(){
     mpu.setGyrDLPF(MPU9250_DLPF_1); // Level 6 limit is 5Hz with 33ms delay. Level 0 is 250Hz with 1ms delay.
 
 
-
+    
     // Setup for SD Card
     while(!SD.begin(sdChipSelect)){ // initialise SD card
-        Serial.println("ERROR WITH SD CARD");
+        Serial.println("SD Card init failed");
         delay(2000);
     }
+    Serial.println("SD Card init success");
     // determine a suitable sd card filename.
     // the oldest file is 0, the youngest file is the highest number
     int i = 0;
-    sprintf(logFileName, "%d.csv", i);
-    while(SD.exists(logFileName)){ // do not overwrite previous files.
+    sdLogFileName = String(i + ".csv");
+    while(SD.exists(sdLogFileName)){ // do not overwrite previous files.
         i++;
-        sprintf(logFileName, "%d.csv", i);
+        sdLogFileName = String(i + ".csv");
     }
-    logFile = SD.open(logFileName, FILE_WRITE); // touch file
+
+
+    
+    // Setup for SD Card
+    while(!SerialFlash.begin(flashChipSelect)){
+        Serial.println(F("SPI Flash init failed"));
+        delay(2000);
+    }
+    Serial.println("SPI Flash init success");
+    // Move all data from SPI Flash to microSD Card. Halt if erroring.
+    SerialFlash.opendir();
+    while(1){
+        char filename[64];
+        uint32_t filesize;
+        if(SerialFlash.readdir(filename, sizeof(filename), filesize)){ // if data exists on SPI Flash
+            Serial.println("Data found on SPI Flash!");
+            Serial.println("Copying...");
+            SerialFlashFile serialFile = SerialFlash.open(filename); // Get file from SPI Flash
+            sdLogFile = SD.open(sdLogFileName, FILE_WRITE); // make file on SD Card
+            
+            unsigned long n = filesize;
+            char buffer[256];
+            while (n > 0) {
+                unsigned long rd = n;
+                if (rd > sizeof(buffer)) rd = sizeof(buffer);
+                sdLogFile.write(serialFile.read(buffer, rd));
+                n = n - rd;
+            }
+            sdLogFile.close(); // Close SD Card
+            // Index logfile
+            i++;
+            sdLogFileName = String(i + ".csv");
+        }
+        else {
+            break; // no more files
+        }
+    }
+
+
+    // Write SD Card Preamble to Log File.
+    // This should be moved to SPI Flash...
+    sdLogFile = SD.open(sdLogFileName, FILE_WRITE); // touch file
     // write some basic file headers to the file.
-    logFile.println("Millis, BMP T(C), Pressure (hPa), MPU T(C), Lx, Ly, Lz, gyrX, gyrY, gyrZ");
-    logFile.close(); // remember to close the file and flush changes!
+    sdLogFile.println("Millis, BMP T(C), Pressure (hPa), MPU T(C), Lx, Ly, Lz, gyrX, gyrY, gyrZ");
+    sdLogFile.close(); // remember to close the file and flush changes!
 
     // serial debugging. Possibility to turn this into telemetry in the future
     Serial.println("SD CARD Preamble written.");
     Serial.print("DATALOG FILENAME:");
-    Serial.println(logFileName);
-
-
-
+    Serial.println(sdLogFileName);
     
     delay(5000);
 }
