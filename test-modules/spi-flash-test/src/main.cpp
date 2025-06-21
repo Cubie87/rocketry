@@ -21,7 +21,7 @@
 #include <SerialFlash.h>
 #include <SPI.h>
 
-const int FlashChipSelect = 22; // digital pin for flash chip CS pin
+const int FlashChipSelect = 17; // digital pin for flash chip CS pin
 //const int FlashChipSelect = 21; // Arduino 101 built-in SPI Flash
 
 SerialFlashFile file;
