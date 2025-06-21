@@ -40,15 +40,17 @@ void setup(){
     Wire.setClock(400000); // Set I2C to Fast (400kHz)
 
 
+
     // Setup for BMP280
     bmp.reset();
-    while(bmp.begin() != BMP::eStatusOK) {
+    while(bmp.begin() != BMP::eStatusOK){
         Serial.println("BMP init faild");
         delay(2000);
     }
     Serial.println("BMP init success");
     baroGroundAlt = bmp.calAltitude(bmp.getPressure()); // Set "Ground" Barometric Altitude
     maxAltThusFar = baroGroundAlt; // Ensure that negative barometric altitudes cannot cause errors.
+    
     
 
     // Setup for MPU9250
@@ -65,6 +67,7 @@ void setup(){
     mpu.setGyrRange(MPU9250_GYRO_RANGE_2000); // Gyro Settings
     mpu.enableGyrDLPF();
     mpu.setGyrDLPF(MPU9250_DLPF_1); // Level 6 limit is 5Hz with 33ms delay. Level 0 is 250Hz with 1ms delay.
+
 
 
     // Setup for SD Card
@@ -131,7 +134,7 @@ void loop(){
     /*
     Finite State Machine
     */
-    switch (systemState){
+    switch(systemState){
         case 0: // Pre Launch
             if(rollingAltAverage > baroGroundAlt + 20.0f){
                 // if we are above 20m AGL, we have launched.
