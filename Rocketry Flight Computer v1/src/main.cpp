@@ -2,6 +2,8 @@
 #include "Wire.h" // I2C Bus
 #include "BMP280.h" // Barometer and Temperature Sensor
 #include "MPU9250_WE.h" // Inertial Measurement Unit
+#include "SD.h" // microSD Card
+#include "SPI.h" // SPI Bus for SPI Flash and microSD
 
 #include "baro-rolling-ave.h"
 
@@ -10,7 +12,12 @@ typedef DFRobot_BMP280_IIC BMP;
 BMP bmp(&Wire, BMP::eSdoLow);
 
 // Definitions for MPU9250 Inertial Measurement Unit
-MPU9250_WE mpu = MPU9250_WE(0x68); // I2c Address of MPU
+MPU9250_WE mpu = MPU9250_WE(0x68); // I2C Address of MPU
+
+// Definitions for SD Card
+const int sdChipSelect = 22; // SPI CS Pin for SD Card
+File logFile; // Fat32 file variable
+char logFileName[32] = {0};
 
 // System State Variables
 int systemState = 0; // Finite State Machine
@@ -29,6 +36,7 @@ void setup(){
     Wire.begin(); // Start I2C Bus
     Wire.setClock(400000); // Set I2C to Fast (400kHz)
 
+
     // Setup for BMP280
     bmp.reset();
     while(bmp.begin() != BMP::eStatusOK) {
@@ -39,6 +47,7 @@ void setup(){
     baroGroundAlt = bmp.calAltitude(bmp.getPressure()); // Set "Ground" Barometric Altitude
     maxAltThusFar = baroGroundAlt; // Ensure that negative barometric altitudes cannot cause errors.
     
+
     // Setup for MPU9250
     while(mpu.init() == false){ // failed init returns false
         Serial.println("MPU init failed");
@@ -54,6 +63,33 @@ void setup(){
     mpu.enableGyrDLPF();
     mpu.setGyrDLPF(MPU9250_DLPF_1); // Level 6 limit is 5Hz with 33ms delay. Level 0 is 250Hz with 1ms delay.
 
+
+    // Setup for SD Card
+    while(!SD.begin(sdChipSelect)){ // initialise SD card
+        Serial.println("ERROR WITH SD CARD");
+        delay(2000);
+    }
+    // determine a suitable sd card filename.
+    // the oldest file is 0, the youngest file is the highest number
+    int i = 0;
+    sprintf(logFileName, "%d.csv", i);
+    while(SD.exists(logFileName)){ // do not overwrite previous files.
+        i++;
+        sprintf(logFileName, "%d.csv", i);
+    }
+    logFile = SD.open(logFileName, FILE_WRITE); // touch file
+    // write some basic file headers to the file.
+    logFile.println("Millis, BMP T(C), Pressure (hPa), MPU T(C), Lx, Ly, Lz, gyrX, gyrY, gyrZ");
+    logFile.close(); // remember to close the file and flush changes!
+
+    // serial debugging. Possibility to turn this into telemetry in the future
+    Serial.println("SD CARD Preamble written.");
+    Serial.print("DATALOG FILENAME:");
+    Serial.println(logFileName);
+
+
+
+    
     delay(5000);
 }
 
