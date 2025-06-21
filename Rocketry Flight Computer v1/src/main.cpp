@@ -80,10 +80,10 @@ void setup(){
     // determine a suitable sd card filename.
     // the oldest file is 0, the youngest file is the highest number
     int i = 0;
-    sdLogFileName = String(i + ".csv");
+    sdLogFileName = String(String(i, HEX) + ".csv");
     while(SD.exists(sdLogFileName)){ // do not overwrite previous files.
         i++;
-        sdLogFileName = String(i + ".csv");
+        sdLogFileName = String(String(i, HEX) + ".csv");
     }
 
 
@@ -116,7 +116,7 @@ void setup(){
             sdLogFile.close(); // Close SD Card
             // Index logfile
             i++;
-            sdLogFileName = String(i + ".csv");
+            sdLogFileName = String(String(i, HEX) + ".csv");
         }
         else {
             break; // no more files
@@ -132,8 +132,8 @@ void setup(){
     sdLogFile.close(); // remember to close the file and flush changes!
 
     // serial debugging. Possibility to turn this into telemetry in the future
-    Serial.println("SD CARD Preamble written.");
-    Serial.print("DATALOG FILENAME:");
+    Serial.println("Data preamble written.");
+    Serial.print("Filename:");
     Serial.println(sdLogFileName);
     
     delay(5000);
