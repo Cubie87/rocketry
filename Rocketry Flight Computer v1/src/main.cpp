@@ -20,10 +20,12 @@ MPU9250_WE mpu = MPU9250_WE(0x68); // I2C Address of MPU
 // Definitions for SD Card
 const int sdChipSelect = 22; // SPI CS Pin for SD Card
 File sdLogFile; // Fat32 file variable
-String sdLogFileName;
+char sdLogFileName[32] = {0};
 
 // Definitions for SPI Flash
 const int flashChipSelect = 17; // digital pin for flash chip CS pin
+SerialFlashFile spiFlashFile;
+char spiFlashFileName[32] = {0};
 
 // System State Variables
 int systemState = 0; // Finite State Machine
@@ -42,7 +44,11 @@ void setup(){
 
 
 
-    // Setup for BMP280
+    /* Setup for BMP280
+    This block of code initialises the BMP280 over the I2C bus.
+    It also sets the "ground" barometric altitude to var 'baroGroundAlt'
+    Further, it sets 'maxAltThusFar' to be 'baroGroundAlt' to avoid errors from negative values
+    */
     bmp.reset();
     while(bmp.begin() != BMP::eStatusOK){
         Serial.println("BMP init faild");
@@ -54,7 +60,11 @@ void setup(){
     
 
 
-    // Setup for MPU9250
+    /* Setup for MPU9250 
+    This block initialises the MPU9250 over the I2C Bus
+    It also calibrates the MPU assuming it is lying flat with Z+ facing up
+    Also sets MPU settings for DLPF and Range fro both Gyro and Accel
+    */
     while(mpu.init() == false){ // failed init returns false
         Serial.println("MPU init failed");
         delay(2000);
@@ -71,7 +81,11 @@ void setup(){
 
 
     
-    // Setup for SD Card
+    /* Setup for SD Card 
+    This block of code initialises the SD Card over SPI
+    It also determines a suitable filename for datalogging (N.csv)
+    The bigger N is, the more recent it is
+    */
     while(!SD.begin(sdChipSelect)){ // initialise SD card
         Serial.println("SD Card init failed");
         delay(2000);
@@ -80,15 +94,20 @@ void setup(){
     // determine a suitable sd card filename.
     // the oldest file is 0, the youngest file is the highest number
     int i = 0;
-    sdLogFileName = String(String(i, HEX) + ".csv");
+    itoa(i, sdLogFileName, 16); strcat(sdLogFileName, ".csv");
     while(SD.exists(sdLogFileName)){ // do not overwrite previous files.
         i++;
-        sdLogFileName = String(String(i, HEX) + ".csv");
+        itoa(i, sdLogFileName, 16); strcat(sdLogFileName, ".csv");
     }
 
 
     
-    // Setup for SD Card
+    /* Setup for SPI Flash 
+    This block initialises the SPI Flash Chip over SPI
+    It also copies all data from the SPI Flash Chip to the SD card
+    and iterates the appropriate filenames on the SD card
+    It deletes data from the SPI Flash Chip after copying to SD Card
+    */
     while(!SerialFlash.begin(flashChipSelect)){
         Serial.println(F("SPI Flash init failed"));
         delay(2000);
@@ -113,10 +132,13 @@ void setup(){
                 sdLogFile.write(serialFile.read(buffer, rd));
                 n = n - rd;
             }
-            sdLogFile.close(); // Close SD Card
-            // Index logfile
+            serialFile.close(); // Close SPI Flash File
+            serialFile.erase(); // Delete file after moving data
+            sdLogFile.close(); // Close SD Card File
+            // Index logfile filename
             i++;
-            sdLogFileName = String(String(i, HEX) + ".csv");
+            itoa(i, sdLogFileName, 16); strcat(sdLogFileName, ".csv");
+            Serial.println(sdLogFileName); // testing
         }
         else {
             break; // no more files
@@ -205,6 +227,7 @@ void loop(){
     /*
     Save Data to SPI Flash
     */
+    spiFlashFile = SerialFlash.open(spiFlashFileName); 
 
 
     /*
