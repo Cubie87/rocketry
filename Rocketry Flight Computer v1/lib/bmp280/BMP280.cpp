@@ -103,7 +103,7 @@ uint32_t DFRobot_BMP280::getPressure()
 
 float DFRobot_BMP280::calAltitude(float pressure)
 {
-  return 44330 * (1.0f - pow(pressure / 100 / 1013.25f, 0.1903f));
+  return 44330.0f * (1.0f - pow(pressure / 101325.0f, 0.1903f));
 }
 
 void DFRobot_BMP280::reset()

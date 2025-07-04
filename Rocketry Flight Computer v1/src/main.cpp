@@ -55,6 +55,7 @@ void setup(){
         delay(2000);
     }
     Serial.println("BMP init success");
+    delay(1000); // warmup time for MEMS sensor to equiliberate. Otherwise negative groundAlt
     baroGroundAlt = bmp.calAltitude(bmp.getPressure()); // Set "Ground" Barometric Altitude
     maxAltThusFar = baroGroundAlt; // Ensure that negative barometric altitudes cannot cause errors.
     
@@ -70,6 +71,7 @@ void setup(){
         delay(2000);
     }
     Serial.println("MPU init success");
+    delay(1000); // warmup time for MEMS sensor.
     mpu.autoOffsets(); // calibration.
     mpu.setSampleRateDivider(5);
     mpu.setAccRange(MPU9250_ACC_RANGE_16G); // Accel Settings
